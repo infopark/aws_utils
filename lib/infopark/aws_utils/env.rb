@@ -54,8 +54,14 @@ class Env
   end
 
 
+  def account_type
+    return "dev" if dev_account?
+    return "prod" if account?(PROD_ACCOUNT_ID)
+    raise "Could not determine account type."
+  end
+
   def dev_account?
-    sts.get_caller_identity.account == DEV_ACCOUNT_ID
+    account?(DEV_ACCOUNT_ID)
   end
 
   def latest_base_image
@@ -76,6 +82,12 @@ class Env
   def find_image_by_name(name)
     AwsUtils.gather_all(ec2, :describe_images, owners: [DEV_ACCOUNT_ID],
         filters: [{name: "name", values: [name]}]).first
+  end
+
+  private
+
+  def account?(account_id)
+    sts.get_caller_identity.account == account_id
   end
 end
 
