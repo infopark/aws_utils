@@ -1,10 +1,9 @@
 require 'infopark/aws_utils/env'
+require 'json'
 
 module Infopark
   module AwsUtils
     AWS_AMI_OWNER = "137112412989"
-    DEV_ACCOUNT_ID = "012615398682"
-    PROD_ACCOUNT_ID = "115379056088"
 
     class << self
       def gather_all(client, method, **options)
@@ -34,6 +33,25 @@ module Infopark
           w.before_wait { progress.increment }
         end
       end
+
+      protected
+
+      def local_config
+        @local_config ||= (
+          path = "#{Dir.home}/.config/infopark/aws_utils.json"
+          if File.exists?(path)
+            JSON.parse(File.read(path))
+          else
+            {}
+          end
+        )
+      end
     end
+
+    DEV_ACCOUNT_ID = ENV['INFOPARK_AWS_DEV_ACCOUNT_ID'] || self.local_config['dev_account_id']
+    PROD_ACCOUNT_ID = ENV['INFOPARK_AWS_PROD_ACCOUNT_ID'] || self.local_config['prod_account_id']
+
+    puts "WARN: The Infopark AWS development account ID is not configured." unless DEV_ACCOUNT_ID
+    puts "WARN: The Infopark AWS production account ID is not configured." unless PROD_ACCOUNT_ID
   end
 end
