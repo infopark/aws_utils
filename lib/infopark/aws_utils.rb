@@ -1,3 +1,5 @@
+require 'infopark/aws_utils/env'
+
 module Infopark
   module AwsUtils
     AWS_AMI_OWNER = "137112412989"
