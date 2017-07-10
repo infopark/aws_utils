@@ -35,4 +35,26 @@ RSpec.describe Infopark::AwsUtils::Env do
       end
     end
   end
+
+  [
+    [:aas, Aws::ApplicationAutoScaling],
+    [:alb, Aws::ElasticLoadBalancingV2],
+    [:as, Aws::AutoScaling],
+    [:cw, Aws::CloudWatch],
+    [:cwl, Aws::CloudWatchLogs],
+    [:ec2, Aws::EC2],
+    [:ecr, Aws::ECR],
+    [:ecs, Aws::ECS],
+    [:sts, Aws::STS],
+  ].each do |_client, _mod|
+    describe "##{_client}" do
+      subject(:client) { env.send(_client) }
+
+      it { is_expected.to be_a(_mod.const_get("Client")) }
+
+      it "is cached" do
+        expect(client).to be(env.send(_client))
+      end
+    end
+  end
 end

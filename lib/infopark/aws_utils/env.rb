@@ -9,7 +9,7 @@ class Env
   def initialize(profile_name = nil)
     @credentials = Aws::SharedCredentials.new(profile_name: profile_name)
     @clients = Hash.new do |clients, mod|
-      mod.const_get(:Client).new(credentials: @credentials, region: 'eu-west-1')
+      clients[mod] = mod.const_get(:Client).new(credentials: @credentials, region: 'eu-west-1')
     end
   end
 
