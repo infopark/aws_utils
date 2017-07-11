@@ -6,6 +6,17 @@ module Infopark
   module AwsUtils
 
 class Env
+  class << self
+    def profile(name)
+      env_var = "AWS_#{name.upcase}_PROFILE"
+      profile_name = ENV[env_var] || name
+      new(profile_name)
+    rescue Aws::Errors::NoSuchProfileError
+      raise "AWS profile “#{profile_name}” not found."\
+          " Please provide the #{name} profile via #{env_var}."
+    end
+  end
+
   def initialize(profile_name = nil)
     @credentials = Aws::SharedCredentials.new(profile_name: profile_name)
     @clients = Hash.new do |clients, mod|
