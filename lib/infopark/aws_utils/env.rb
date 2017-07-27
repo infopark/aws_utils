@@ -67,12 +67,16 @@ class Env
 
   def account_type
     return "dev" if dev_account?
-    return "prod" if account?(PROD_ACCOUNT_ID)
+    return "prod" if prod_account?
     raise "Could not determine account type."
   end
 
   def dev_account?
     account?(DEV_ACCOUNT_ID)
+  end
+
+  def prod_account?
+    account?(PROD_ACCOUNT_ID)
   end
 
   def latest_base_image

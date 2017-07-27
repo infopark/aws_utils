@@ -1,4 +1,14 @@
 RSpec.describe Infopark::AwsUtils::Env do
+  let(:account_id) { nil }
+  let(:sts) do
+    Aws::STS::Client.new.tap do |client|
+      allow(client).to receive(:get_caller_identity)
+          .and_return(double(:caller_identity, account: account_id))
+    end
+  end
+
+  before { allow(Aws::STS::Client).to receive(:new).and_return(sts) }
+
   subject(:env) { Infopark::AwsUtils::Env.new }
 
   describe ".profile" do
@@ -63,25 +73,16 @@ RSpec.describe Infopark::AwsUtils::Env do
   end
 
   describe "#account_type" do
-    let(:account_id) { nil }
-    let(:sts) do
-      instance_double(Aws::STS::Client,
-        get_caller_identity: double(:caller_identity, account: account_id)
-      )
-    end
-
-    before { allow(Aws::STS::Client).to receive(:new).and_return(sts) }
-
     subject(:account_type) { env.account_type }
 
     context "for profile in development account" do
-      let(:account_id) { "012615398682" }
+      let(:account_id) { "the_dev_account" }
 
       it { is_expected.to eq("dev") }
     end
 
     context "for profile in production account" do
-      let(:account_id) { "115379056088" }
+      let(:account_id) { "the_prod_account" }
 
       it { is_expected.to eq("prod") }
     end
@@ -94,6 +95,50 @@ RSpec.describe Infopark::AwsUtils::Env do
           account_type
         }.to raise_error("Could not determine account type.")
       end
+    end
+  end
+
+  describe "#dev_account?" do
+    subject { env.dev_account? }
+
+    context "for development account" do
+      let(:account_id) { "the_dev_account" }
+
+      it { is_expected.to be true }
+    end
+
+    context "for production account" do
+      let(:account_id) { "the_prod_account" }
+
+      it { is_expected.to be false }
+    end
+
+    context "for some other account" do
+      let(:account_id) { "137112412989" }
+
+      it { is_expected.to be false }
+    end
+  end
+
+  describe "#prod_account?" do
+    subject { env.prod_account? }
+
+    context "for development account" do
+      let(:account_id) { "the_dev_account" }
+
+      it { is_expected.to be false }
+    end
+
+    context "for production account" do
+      let(:account_id) { "the_prod_account" }
+
+      it { is_expected.to be true }
+    end
+
+    context "for some other account" do
+      let(:account_id) { "137112412989" }
+
+      it { is_expected.to be false }
     end
   end
 

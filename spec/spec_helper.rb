@@ -1,3 +1,6 @@
+ENV['INFOPARK_AWS_DEV_ACCOUNT_ID'] = 'the_dev_account'
+ENV['INFOPARK_AWS_PROD_ACCOUNT_ID'] = 'the_prod_account'
+
 require 'infopark/aws_utils'
 
 RSpec.configure do |config|
