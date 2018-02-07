@@ -1,4 +1,11 @@
-require 'aws-sdk'
+require 'aws-sdk-applicationautoscaling'
+require 'aws-sdk-autoscaling'
+require 'aws-sdk-cloudwatch'
+require 'aws-sdk-cloudwatchlogs'
+require 'aws-sdk-ec2'
+require 'aws-sdk-ecs'
+require 'aws-sdk-ecr'
+require 'aws-sdk-elasticloadbalancingv2'
 
 require 'infopark/aws_utils'
 

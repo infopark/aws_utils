@@ -10,7 +10,14 @@ Gem::Specification.new do |s|
   s.files = `git ls-files -z`.split("\0")
   s.license = 'UNLICENSED'
 
-  s.add_dependency "aws-sdk", ">=2.10"
+  s.add_dependency "aws-sdk-applicationautoscaling", "~> 1"
+  s.add_dependency "aws-sdk-autoscaling", "~> 1"
+  s.add_dependency "aws-sdk-cloudwatch", "~> 1"
+  s.add_dependency "aws-sdk-cloudwatchlogs", "~> 1"
+  s.add_dependency "aws-sdk-ec2", "~> 1"
+  s.add_dependency "aws-sdk-ecr", "~> 1"
+  s.add_dependency "aws-sdk-ecs", "~> 1"
+  s.add_dependency "aws-sdk-elasticloadbalancingv2", "~> 1"
 
   s.add_development_dependency "bundler"
   s.add_development_dependency "rake"
