@@ -86,14 +86,28 @@ class Env
     account?(PROD_ACCOUNT_ID)
   end
 
-  def latest_base_image
+  def latest_base_image(root_device_type: :instance)
+    root_device_filter_value =
+        case root_device_type
+        when :instance
+          ["instance-store"]
+        when :ebs
+          ["ebs"]
+        else
+          raise "invalid root_device_type: #{root_device_type}"
+        end
     available_images = AwsUtils.gather_all(ec2, :describe_images,
         owners: [AWS_AMI_OWNER],
         filters: [
-          {name: "root-device-type", values: ["instance-store"]},
+          {name: "root-device-type", values: root_device_filter_value},
+          {name: "ena-support", values: ["true"]},
           {name: "image-type", values: ["machine"]},
           {name: "virtualization-type", values: ["hvm"]},
-        ]).reject {|image| image.name.include?(".rc-") || image.name.include?("-minimal-") }
+        ])
+        .reject {|image| image.name.include?(".rc-") }
+        .reject {|image| image.name.include?("-minimal-") }
+        .reject {|image| image.name.include?("-test") }
+        .reject {|image| image.name.include?("amzn-ami-vpc-nat-") }
     available_images.sort_by(&:creation_date).last
   end
 
