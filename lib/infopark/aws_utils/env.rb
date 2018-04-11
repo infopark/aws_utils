@@ -86,7 +86,7 @@ class Env
     account?(PROD_ACCOUNT_ID)
   end
 
-  def latest_base_image(root_device_type: :instance)
+  def latest_base_image(root_device_type: :instance, reject_image_name_patterns: nil)
     root_device_filter_value =
         case root_device_type
         when :instance
@@ -108,6 +108,9 @@ class Env
         .reject {|image| image.name.include?("-minimal-") }
         .reject {|image| image.name.include?("-test") }
         .reject {|image| image.name.include?("amzn-ami-vpc-nat-") }
+    (reject_image_name_patterns || []) do |pattern|
+      available_images.reject! {|image| image.name =~ pattern }
+    end
     available_images.sort_by(&:creation_date).last
   end
 
