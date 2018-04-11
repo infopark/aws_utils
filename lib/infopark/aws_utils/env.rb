@@ -108,7 +108,7 @@ class Env
         .reject {|image| image.name.include?("-minimal-") }
         .reject {|image| image.name.include?("-test") }
         .reject {|image| image.name.include?("amzn-ami-vpc-nat-") }
-    (reject_image_name_patterns || []) do |pattern|
+    (reject_image_name_patterns || []).each do |pattern|
       available_images.reject! {|image| image.name =~ pattern }
     end
     available_images.sort_by(&:creation_date).last
