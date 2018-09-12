@@ -7,23 +7,29 @@ module Infopark
 
     class << self
       def gather_all(client, method, **options)
-        @gather_cache ||= {}
-        cache_key = [client, method, options]
-        return @gather_cache[cache_key] if @gather_cache[cache_key]
+        unless block_given?
+          @gather_cache ||= {}
+          cache_key = [client, method, options]
+          return @gather_cache[cache_key] if @gather_cache[cache_key]
+        end
 
         result = []
         loop do
-          response = client.send(method, **options)
+          response = retry_on_throttle { client.send(method, **options) }
           key = (response.members - [:next_token, :failures]).first
           if response.members.include?(:failures) && !response.failures.empty?
             raise "Failed gathering all #{method}: #{response.failures}"
           end
-          result += response[key]
+          if block_given?
+            response[key].each {|entity| retry_on_throttle { yield entity } }
+          else
+            result += response[key]
+          end
           unless options[:next_token] = response.members.include?(:next_token) && response.next_token
             break
           end
         end
-        @gather_cache[cache_key] = result
+        @gather_cache[cache_key] = result unless block_given?
       end
 
       def wait_for(progress, client, waiter, delay: 2, max_attempts: 60, **waiter_params)
@@ -45,6 +51,18 @@ module Infopark
             {}
           end
         )
+      end
+
+      private
+
+      def retry_on_throttle
+        yield
+      rescue => e
+        if e.class.name =~ /Throttl/
+          sleep 0.1
+          retry
+        end
+        raise
       end
     end
 
