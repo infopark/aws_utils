@@ -26,10 +26,21 @@ class Env
 
   def initialize(profile_name = nil)
     @credentials = Aws::SharedCredentials.new(profile_name: profile_name)
+    if @credentials.credentials.nil?
+      raise "No credentials for AWS profile “#{profile_name}” found."\
+          " Please provide them via ~/.aws/credentials."
+    end
+
+    region = Aws.shared_config.region(profile: profile_name)
+    if region.nil?
+      raise "No region for AWS profile “#{profile_name}” found."\
+          " Please provide them via ~/.aws/config."
+    end
+
     @clients = Hash.new do |clients, mod|
       clients[mod] = mod.const_get(:Client).new(
         credentials: @credentials,
-        region: Aws.shared_config.region(profile: profile_name),
+        region: region,
       )
     end
   end

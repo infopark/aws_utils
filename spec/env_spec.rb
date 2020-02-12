@@ -50,6 +50,40 @@ RSpec.describe Infopark::AwsUtils::Env do
       end
     end
 
+    context "when requested profile has no credentials configured" do
+      before do
+        allow(Aws::SharedCredentials).to receive(:new).with(profile_name: requested_profile)
+          .and_return(
+            instance_double(
+              Aws::SharedCredentials,
+              profile_name: requested_profile,
+              credentials: nil,
+            ),
+          )
+      end
+
+      it "raises an error, asking for the credentials to be configured" do
+        expect {
+          subject
+        }.to raise_error("No credentials for AWS profile “#{requested_profile}” found."\
+                         " Please provide them via ~/.aws/credentials.")
+      end
+    end
+
+    context "when requested profile has no region configured" do
+      before do
+        allow(Aws.shared_config).to receive(:region).with(profile: requested_profile)
+          .and_return(nil)
+      end
+
+      it "raises an error, asking for the region to be configured" do
+        expect {
+          subject
+        }.to raise_error("No region for AWS profile “#{requested_profile}” found."\
+                         " Please provide them via ~/.aws/config.")
+      end
+    end
+
     context "when environment variable is set" do
       let(:value) { "#{requested_profile}_by_env" }
 
