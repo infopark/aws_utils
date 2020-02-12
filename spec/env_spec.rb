@@ -1,7 +1,7 @@
 RSpec.describe Infopark::AwsUtils::Env do
   let(:account_id) { nil }
   let(:sts) do
-    Aws::STS::Client.new.tap do |client|
+    Aws::STS::Client.new(region: "eu-west-1").tap do |client|
       allow(client).to receive(:get_caller_identity)
           .and_return(double(:caller_identity, account: account_id))
     end
@@ -18,8 +18,16 @@ RSpec.describe Infopark::AwsUtils::Env do
     subject { Infopark::AwsUtils::Env.profile(requested_profile) }
 
     before do
-      allow(Aws::SharedCredentials).to receive(:new).with(profile_name: requested_profile).
-          and_return(instance_double(Aws::SharedCredentials, profile_name: requested_profile))
+      allow(Aws::SharedCredentials).to receive(:new).with(profile_name: requested_profile)
+        .and_return(
+          instance_double(
+            Aws::SharedCredentials,
+            profile_name: requested_profile,
+            credentials: instance_double(Aws::Credentials),
+          ),
+        )
+      allow(Aws.shared_config).to receive(:region).with(profile: requested_profile)
+        .and_return("eu-west-1")
     end
 
     it { is_expected.to be_a(Infopark::AwsUtils::Env) }
@@ -48,8 +56,15 @@ RSpec.describe Infopark::AwsUtils::Env do
       before do
         allow(ENV).to receive(:[]).and_call_original
         allow(ENV).to receive(:[]).with(env_var).and_return(value)
-        allow(Aws::SharedCredentials).to receive(:new).with(profile_name: value).
-            and_return(instance_double(Aws::SharedCredentials, profile_name: value))
+        allow(Aws::SharedCredentials).to receive(:new).with(profile_name: value).and_return(
+          instance_double(
+            Aws::SharedCredentials,
+            profile_name: value,
+            credentials: instance_double(Aws::Credentials),
+          ),
+        )
+        allow(Aws.shared_config).to receive(:region).with(profile: value)
+          .and_return("eu-west-1")
       end
 
       it "uses credentials for this profile" do
@@ -73,6 +88,17 @@ RSpec.describe Infopark::AwsUtils::Env do
   end
 
   describe "#account_type" do
+    before do
+      allow(Aws::SharedCredentials).to receive(:new).and_return(
+        instance_double(
+          Aws::SharedCredentials,
+          profile_name: "foo",
+          credentials: instance_double(Aws::Credentials),
+        ),
+      )
+      allow(Aws.shared_config).to receive(:region).and_return("eu-west-1")
+    end
+
     subject(:account_type) { env.account_type }
 
     context "for profile in development account" do
@@ -99,6 +125,17 @@ RSpec.describe Infopark::AwsUtils::Env do
   end
 
   describe "#dev_account?" do
+    before do
+      allow(Aws::SharedCredentials).to receive(:new).and_return(
+        instance_double(
+          Aws::SharedCredentials,
+          profile_name: "foo",
+          credentials: instance_double(Aws::Credentials),
+        ),
+      )
+      allow(Aws.shared_config).to receive(:region).and_return("eu-west-1")
+    end
+
     subject { env.dev_account? }
 
     context "for development account" do
@@ -121,6 +158,17 @@ RSpec.describe Infopark::AwsUtils::Env do
   end
 
   describe "#prod_account?" do
+    before do
+      allow(Aws::SharedCredentials).to receive(:new).and_return(
+        instance_double(
+          Aws::SharedCredentials,
+          profile_name: "foo",
+          credentials: instance_double(Aws::Credentials),
+        ),
+      )
+      allow(Aws.shared_config).to receive(:region).and_return("eu-west-1")
+    end
+
     subject { env.prod_account? }
 
     context "for development account" do
@@ -154,6 +202,17 @@ RSpec.describe Infopark::AwsUtils::Env do
     [:sts, Aws::STS],
   ].each do |_client, _mod|
     describe "##{_client}" do
+      before do
+        allow(Aws::SharedCredentials).to receive(:new).and_return(
+          instance_double(
+            Aws::SharedCredentials,
+            profile_name: "foo",
+            credentials: instance_double(Aws::Credentials),
+          ),
+        )
+        allow(Aws.shared_config).to receive(:region).and_return("eu-west-1")
+      end
+
       subject(:client) { env.send(_client) }
 
       it { is_expected.to be_a(_mod.const_get("Client")) }
