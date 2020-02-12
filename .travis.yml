@@ -1,14 +1,7 @@
 language: ruby
 rvm:
-- 2.2
-- 2.3
+- 2.4
+- 2.5
+- 2.6
 script:
 - bundle exec rspec spec
-deploy:
-  provider: rubygems
-  api_key:
-    secure: e4QeU1KKglgUR6y0kWCxGTjjhmC1Txmw4p1PiWt5Sj+dg3eSnr5PO5cCU+YsBo1fVBOhxpcZXwDk0iv8q0s3SqWbask6awXCBh9I7nnstLI5HgoR0ydS6rVsOUX7tWSPHVwHFUBL83iArHkuFRvsCZl2HQr3YecvBAQzXVc7EsPfvu1Rpfjyz3N4wWzpkItge+j5m6uX80dacOpPd9YXOMMd1qMzAB3VbySN8KUXszJL3YgMV/MAaEc4djj+s3GiPCnVjTPVdIb5ZVl0HH+LtkXfgVgxHMyDhwPflBmgg/lnYQG51DcrlHn8mNsJOO0crgqc/B6xqjAalaRLf6iBDqSdx08TulgwQeBlhuq+YWBsV7ZL39NZgZiXLU+NW9ZW9iXy1I7z0PAhHlx1JaCVpNxUlG5fGvPkvOywo368taFJaYvdiTjW+IyaPO5UwcxTlWZlR+vQD/QEc7dsIHXu9/pWxfyycZI/hSnGJwa3lOx+mnU8GZbtufWsIRqnfxM6X0BVWS2BNLlK5drluj+jt0aW8tLSiYRNSY1DuL8U2CM9p3TjeOWvgBPGGzwApBI9/2RRP/E4KtW6ms+YnjT5veXE5rz1z/WmCoyWPdVfchd9J421+QGpq8WNGxnYImug0/mZtkGNkHg0b6nRWuorao/fxWkkDstjK/tk7T0iTug=
-  gem: cloudscopes
-  on:
-    tags: true
-    repo: infopark/aws_utils
