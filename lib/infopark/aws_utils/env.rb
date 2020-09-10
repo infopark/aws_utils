@@ -110,18 +110,22 @@ class Env
         else
           raise "invalid root_device_type: #{root_device_type}"
         end
-    available_images = AwsUtils.gather_all(ec2, :describe_images,
-        owners: [AWS_AMI_OWNER],
-        filters: [
-          {name: "root-device-type", values: root_device_filter_value},
-          {name: "ena-support", values: ["true"]},
-          {name: "image-type", values: ["machine"]},
-          {name: "virtualization-type", values: ["hvm"]},
-        ])
-        .reject {|image| image.name.include?(".rc-") }
-        .reject {|image| image.name.include?("-minimal-") }
-        .reject {|image| image.name.include?("-test") }
-        .reject {|image| image.name.include?("amzn-ami-vpc-nat-") }
+    available_images = AwsUtils.gather_all(
+      client: ec2,
+      method: :describe_images,
+      response_key: :image_details,
+      owners: [AWS_AMI_OWNER],
+      filters: [
+        {name: "root-device-type", values: root_device_filter_value},
+        {name: "ena-support", values: ["true"]},
+        {name: "image-type", values: ["machine"]},
+        {name: "virtualization-type", values: ["hvm"]},
+      ],
+    )
+      .reject {|image| image.name.include?(".rc-") }
+      .reject {|image| image.name.include?("-minimal-") }
+      .reject {|image| image.name.include?("-test") }
+      .reject {|image| image.name.include?("amzn-ami-vpc-nat-") }
     (reject_image_name_patterns || []).each do |pattern|
       available_images.reject! {|image| image.name =~ pattern }
     end
@@ -129,12 +133,22 @@ class Env
   end
 
   def find_image_by_id(id)
-    AwsUtils.gather_all(ec2, :describe_images, image_ids: [id]).first
+    AwsUtils.gather_all(
+      client: ec2,
+      method: :describe_images,
+      response_key: :image_details,
+      image_ids: [id],
+    ).first
   end
 
   def find_image_by_name(name)
-    AwsUtils.gather_all(ec2, :describe_images, owners: [DEV_ACCOUNT_ID],
-        filters: [{name: "name", values: [name]}]).first
+    AwsUtils.gather_all(
+      client: ec2,
+      method: :describe_images,
+      response_key: :image_details,
+      owners: [DEV_ACCOUNT_ID],
+      filters: [{name: "name", values: [name]}],
+    ).first
   end
 
   private

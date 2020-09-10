@@ -6,7 +6,7 @@ module Infopark
     AWS_AMI_OWNER = "137112412989"
 
     class << self
-      def gather_all(client, method, **options)
+      def gather_all(client:, method:, response_key:, **options)
         unless block_given?
           @gather_cache ||= {}
           cache_key = [client, method, options]
@@ -16,14 +16,13 @@ module Infopark
         result = []
         loop do
           response = retry_on_throttle { client.send(method, **options) }
-          key = (response.members - [:next_token, :failures]).first
           if response.members.include?(:failures) && !response.failures.empty?
             raise "Failed gathering all #{method}: #{response.failures}"
           end
           if block_given?
-            response[key].each {|entity| retry_on_throttle { yield entity } }
+            response[response_key].each {|entity| retry_on_throttle { yield entity } }
           else
-            result += response[key]
+            result += response[response_key]
           end
           unless options[:next_token] = response.members.include?(:next_token) && response.next_token
             break
